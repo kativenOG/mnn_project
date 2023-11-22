@@ -9,10 +9,14 @@ def train_cycle(train_dl: DataLoader, test_dl: DataLoader, model: torch.nn.Modul
         loss = single_train(train_dl, model, optimizer)
         loss_deque.append(loss) 
         
+        # Print Average every 10 epochs 
         if (epoch+1)%10 == 0:
             print(f'Epoch {epoch+1}\n\t-The loss is {loss}\n\t-The average loss is {sum(loss_deque)/len(loss_deque)}')
 
-        if (epoch+1)%100 == 0: test(test_dl,model,epoch)
+        # Run Test and save Checkpoint 
+        if (epoch+1)%200 == 0: 
+            test(test_dl,model,epoch)
+            model.save_checkpoint(epoch,optimizer,params)
         
         # Artificial Learning rate Decay 
         if (epoch+1) % params["lr_decay_step_size"] == 0:
@@ -48,4 +52,6 @@ def test(test_dl:DataLoader, model:torch.nn.Module, epoch:int)->None:
             count += len(y)
     
     acc = acc/count
-    print(f"Epoch {epoch+1}, Model accuracy {(acc*100)}") 
+    print()
+    print(f"Test:\n\tEpoch {epoch+1}, Model accuracy {(acc*100)}") 
+    print()

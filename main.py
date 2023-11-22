@@ -1,9 +1,19 @@
-import torch  
+import torch,json   
 
 # Lib Imports  
 from data.dataset import get_dataloaders 
 from model.model import CNN  
 from model.train import train_cycle
+
+def read_params_file(base_params,file_name)->dict:
+    """ 
+    Get the content of the json file and merge it with the base Params 
+    Json file contains the tuned params 
+    """
+    content = open(file_name).read()
+    content = json.loads(content) 
+    return {**base_params, **content}
+
 
 if __name__=='__main__':
     params = {

@@ -1,2 +1,6 @@
 mnn_env
 data/Dataset_sign_language
+params
+data/__pycache__
+model/__pycache__
+
