@@ -18,7 +18,7 @@ def get_img(data_path, img_size):
     return img
 
 def get_dataloaders(shuffle:bool =True, batch_size:int = 32,
-                dataset_path: str='utils/Dataset_sign_language',
+                dataset_path: str='data/Dataset_sign_language',
                 img_size: int=64,
                 test_size: float=0.2, device:torch.device= torch.device('cpu'))-> tuple[DataLoader,DataLoader]:
 

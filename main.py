@@ -1,7 +1,7 @@
 import torch  
 
 # Lib Imports  
-from utils.dataset import get_dataloaders 
+from data.dataset import get_dataloaders 
 from model.model import CNN  
 from model.train import train_cycle
 
