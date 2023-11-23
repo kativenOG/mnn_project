@@ -2,7 +2,7 @@ import torch,json
 
 # Lib Imports  
 from data.dataset import get_dataloaders 
-from model.model import CNN  
+from model.model import CNN,apply_initialization
 from model.train import train_cycle
 
 def read_params_file(base_params,file_name)->dict:
@@ -35,7 +35,8 @@ if __name__=='__main__':
     train_dl, test_dl = get_dataloaders(img_size=params['img_size'],device=device)
 
     # MODEL 
-    model = CNN(n_in=3,k=3 ,fc_hidden=15, n_classes=10).to(device)
+    model = CNN(n_in=3,k=3 ,fc_hidden=15, n_classes=10,bn=True).to(device)
+    model.apply(apply_initialization)
 
     # OPTIMIZER 
     optimizer = torch.optim.SGD(params=model.parameters(),

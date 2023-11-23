@@ -2,7 +2,6 @@ import torch,os,time
 import torch.nn as nn  
 import torch.nn.functional as F
 
-
 class CNN(nn.Module):
 
     def __init__(self,
@@ -28,7 +27,7 @@ class CNN(nn.Module):
         # Hidden layers 
         for _ in range(k):
             self.conv_l.append(nn.Conv2d(in_channels=n_in,out_channels=n_in,kernel_size=3)) 
-            self.bn_l.append(nn.BatchNorm1d(n_in)) 
+            self.bn_l.append(nn.BatchNorm2d(n_in)) 
 
         # Transform to ModuleList
         self.conv_l = nn.ModuleList(self.conv_l)
@@ -49,20 +48,10 @@ class CNN(nn.Module):
                 nn.ReLU(),   
         ) 
 
-        # Params Inizialization  
-        if self.batch_n: 
-            for m in self.modules():
-                if isinstance(m, (torch.nn.BatchNorm1d)):
-                    torch.nn.init.constant_(m.weight, 1)
-                    torch.nn.init.constant_(m.bias, 0.0001)
-                else:
-                    torch.nn.init.xavier_uniform(m.weight) 
-                    if isinstance(m, nn.Linear): m.bias.data.fill_(0.01)
-
     def forward(self,x):
         ######  Convolutional Part ######  
         for conv,bn in zip(self.conv_l,self.bn_l):
-            x = conv(x) 
+            x = conv(x)  
             if self.batch_n: x = bn(x)
             x = F.relu(x)
 
@@ -97,4 +86,25 @@ class CNN(nn.Module):
                 'optimizer_state_dict':optimizer.state_dict(),
         },os.path.join(params['params_dir'],f'timestamp_{timestamp}.pth'))
         print('Checkpoint Saved!') 
+    
+def apply_initialization(m):
+    if not isinstance(m, (nn.ModuleList)):
+        if isinstance(m, (torch.nn.BatchNorm2d)):
+            torch.nn.init.constant_(m.weight, 1)
+            torch.nn.init.constant_(m.bias, 0.0001)
+        elif isinstance(m, nn.Linear): 
+            torch.nn.init.xavier_uniform_(m.weight) 
+            m.bias.data.fill_(0.01)
+        elif isinstance(m,nn.Conv2d):         
+            nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
+    else:
+        for val in m:
+            if isinstance(val, (torch.nn.BatchNorm2d)):
+                torch.nn.init.constant_(val.weight, 1)
+                torch.nn.init.constant_(val.bias, 0.0001)
+            elif isinstance(m, nn.Linear): 
+                torch.nn.init.xavier_uniform_(val.weight) 
+                val.bias.data.fill_(0.01) 
+            elif isinstance(m,nn.Conv2d):         
+                torch.nn.init.xavier_uniform_(val.weight) 
 
