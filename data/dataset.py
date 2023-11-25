@@ -24,6 +24,8 @@ def get_dataloaders(shuffle:bool =True, batch_size:int = 32,
                 device:torch.device= torch.device('cpu'),
                 grayscale = False )-> tuple[DataLoader,DataLoader]:
 
+    print("Fetching the Data...")
+
     try: # Load npy files and transform them to torch Tensors  
         X = np.load(os.path.join(dataset_path,'X.npy'))
         Y = np.load(os.path.join(dataset_path,'Y.npy'))
@@ -63,6 +65,7 @@ def get_dataloaders(shuffle:bool =True, batch_size:int = 32,
         X = transform(X)
 
     # Dataset and Dataloder Generation 
+    print("Generating DataLoaders...")
     full_dataset= TensorDataset(X,Y)
     train_size = int(0.8 * len(full_dataset))
     test_size = len(full_dataset) - train_size
@@ -71,4 +74,5 @@ def get_dataloaders(shuffle:bool =True, batch_size:int = 32,
     train_dl, test_dl = DataLoader(train_dataset,shuffle=shuffle,batch_size=batch_size), \
                         DataLoader(test_dataset,shuffle=shuffle,batch_size=batch_size)  
      
+    print("Finished!\n")
     return train_dl, test_dl

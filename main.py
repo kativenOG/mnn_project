@@ -1,4 +1,4 @@
-import torch,json   
+import torch,json,os,sys 
 
 # Lib Imports  
 from data.dataset import get_dataloaders 
@@ -16,6 +16,7 @@ def read_params_file(base_params,file_name)->dict:
 
 
 if __name__=='__main__':
+
     params = {
                 # Optimizer Hyperparams
                 'lr': 0.0001,
@@ -28,9 +29,17 @@ if __name__=='__main__':
 
                 # Other stuff 
                 'params_dir':'params',
-                'grayscale': True,
+                'grayscale': False,
                 'jupyter': False,
             }
+    
+    print('\n########################################')
+    print(  '#   SIGN LANGUAGE DIGIT RECOGNITION    #')
+    print(  '########################################\n')
+
+    # Load JSON params file 
+    if (len(sys.argv) > 1) and (os.path.isfile(sys.argv[1])):
+        params = read_params_file(params, params)
 
     # DEVICE 
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
@@ -38,16 +47,17 @@ if __name__=='__main__':
     # DATA 
     train_dl, test_dl = get_dataloaders(img_size=params['img_size'],device=device,grayscale=params['grayscale'])
     
-
     # MODEL 
     n_channels = 3 if (not params['grayscale']) else 1 
     model = CNN(n_in=n_channels, k=3, fc_hidden=15, n_classes=10, bn=True,grayscale=params['grayscale']).to(device)
-    model.apply(apply_initialization)
+    model.apply(apply_initialization) # Inizialize Model params 
 
     # OPTIMIZER 
     optimizer = torch.optim.SGD(params=model.parameters(),
                                 lr=params['lr'])
 
+    # START PRINT 
+    print(f'Training Starts:\n\tlr: {params["lr"]}\n\tGrayscale: {params["grayscale"]}\n\tParams directory: {params["params_dir"]}\n')
     # TRAIN AND TEST MODEL 
     train_cycle(train_dl,test_dl,model,optimizer,params)
 

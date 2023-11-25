@@ -4,6 +4,7 @@ import torch.nn.functional as F
 
 from icecream import ic 
 
+
 class CNN(nn.Module):
 
     def __init__(self,
@@ -11,6 +12,7 @@ class CNN(nn.Module):
                  n_in:int,k:int, 
                  # MLP params 
                  fc_hidden: int, n_classes:int,
+                 # Regularization and image type
                  bn = False, grayscale:bool= False)->None:
 
          
@@ -47,6 +49,8 @@ class CNN(nn.Module):
                 nn.ReLU(), 
                 nn.Linear(fc_hidden,fc_hidden), 
                 nn.ReLU(),   
+                # Dropout 
+                nn.Dropout(0.25),
                 nn.Linear(fc_hidden,n_classes), 
                 nn.ReLU(),   
         ) 
@@ -57,7 +61,7 @@ class CNN(nn.Module):
             x = conv(x)  
             if self.batch_n: x = bn(x)
             x = F.relu(x)
-
+            
         ###### Pooling ######  
         x = self.pool(x,kernel_size=self.pool_kernel)
 
@@ -87,11 +91,14 @@ class CNN(nn.Module):
         timestamp = time.strftime('%Y_%b_%d_%H_%M_%S', t)  
         # Save the params 
         print(f'Saving Checkpoint at Timestamp {timestamp}...')
+
+        if params['grayscale']: name = os.path.join(params['params_dir'],f'timestamp_{timestamp}_grayscale.pth')
+        else: name = os.path.join(params['params_dir'],f'timestamp_{timestamp}.pth')
         torch.save({
                 'epoch': epoch,
                 'model_state_dict':self.state_dict(),
                 'optimizer_state_dict':optimizer.state_dict(),
-        },os.path.join(params['params_dir'],f'timestamp_{timestamp}.pth'))
+        },name)
         print('Checkpoint Saved!') 
     
 def apply_initialization(m):
