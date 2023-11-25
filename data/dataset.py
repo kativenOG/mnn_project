@@ -2,7 +2,7 @@ import os,torch
 import numpy as np
 from PIL import Image
 
-import torchvision.transforms as transforms 
+import torchvision.transforms.v2 as transforms 
 from torch.utils.data import random_split 
 from torch.utils.data import TensorDataset, DataLoader
 
@@ -20,14 +20,16 @@ def get_img(data_path, img_size):
 def get_dataloaders(shuffle:bool =True, batch_size:int = 32,
                 dataset_path: str='data/Dataset_sign_language',
                 img_size: int=64,
-                test_size: float=0.2, device:torch.device= torch.device('cpu'))-> tuple[DataLoader,DataLoader]:
+                test_size: float=0.15, 
+                device:torch.device= torch.device('cpu'),
+                grayscale = False )-> tuple[DataLoader,DataLoader]:
 
-    try:
+    try: # Load npy files and transform them to torch Tensors  
         X = np.load(os.path.join(dataset_path,'X.npy'))
         Y = np.load(os.path.join(dataset_path,'Y.npy'))
         X,Y = torch.from_numpy(X).to(torch.float32).to(device), \
               torch.from_numpy(Y).to(torch.long).to(device)
-    except:
+    except: # Generate npy files if they are not there 
         # Get Data:
         labels = os.listdir(os.path.join(dataset_path,'Dataset')) # Geting labels
         X,Y = [],[]
@@ -40,7 +42,6 @@ def get_dataloaders(shuffle:bool =True, batch_size:int = 32,
 
         # Create dateset:
 
-        # Transform Imagte Data 
         transform = transforms.Compose([ transforms.PILToTensor() ]) 
         X = [transform(x) for x in X]
         X = torch.stack(X).to(torch.float32).to(device)
@@ -52,9 +53,16 @@ def get_dataloaders(shuffle:bool =True, batch_size:int = 32,
         Y = torch.from_numpy(Y).to(torch.long).to(device)
 
         if not os.path.exists(dataset_path): os.makedirs(dataset_path)
-        np.save(os.path.join(dataset_path,'X.npy'), X)
-        np.save(os.path.join(dataset_path,'Y.npy'), Y)
-    
+        np.save(os.path.join(dataset_path,'X.npy'), X.detach().cpu().numpy())
+        np.save(os.path.join(dataset_path,'Y.npy'), Y.detach().cpu().numpy())
+
+
+    # GrayScale Augmentation 
+    if grayscale:
+        transform = transforms.Compose([ transforms.Grayscale() ]) 
+        X = transform(X)
+
+    # Dataset and Dataloder Generation 
     full_dataset= TensorDataset(X,Y)
     train_size = int(0.8 * len(full_dataset))
     test_size = len(full_dataset) - train_size

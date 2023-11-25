@@ -18,24 +18,30 @@ def read_params_file(base_params,file_name)->dict:
 if __name__=='__main__':
     params = {
                 # Optimizer Hyperparams
-                'lr': 0.00001,
+                'lr': 0.0001,
                 'lr_decay_factor': 0.5,
-                "lr_decay_step_size": 500,
+                "lr_decay_step_size": 300,
 
                 # Standard hyperparams  
                 'img_size': 64,
-                'epochs':2000,
-                'params_dir':'params'
+                'epochs':1000,
+
+                # Other stuff 
+                'params_dir':'params',
+                'grayscale': True,
+                'jupyter': False,
             }
 
     # DEVICE 
     device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 
     # DATA 
-    train_dl, test_dl = get_dataloaders(img_size=params['img_size'],device=device)
+    train_dl, test_dl = get_dataloaders(img_size=params['img_size'],device=device,grayscale=params['grayscale'])
+    
 
     # MODEL 
-    model = CNN(n_in=3,k=3 ,fc_hidden=15, n_classes=10,bn=True).to(device)
+    n_channels = 3 if (not params['grayscale']) else 1 
+    model = CNN(n_in=n_channels, k=3, fc_hidden=15, n_classes=10, bn=True,grayscale=params['grayscale']).to(device)
     model.apply(apply_initialization)
 
     # OPTIMIZER 

@@ -2,6 +2,8 @@ import torch,os,time
 import torch.nn as nn  
 import torch.nn.functional as F
 
+from icecream import ic 
+
 class CNN(nn.Module):
 
     def __init__(self,
@@ -9,7 +11,7 @@ class CNN(nn.Module):
                  n_in:int,k:int, 
                  # MLP params 
                  fc_hidden: int, n_classes:int,
-                 bn = False, img_size:int = 64)->None:
+                 bn = False, grayscale:bool= False)->None:
 
          
         super(CNN,self).__init__()
@@ -20,8 +22,6 @@ class CNN(nn.Module):
         self.pool_kernel = 5  
 
         #####Convolutional Layers and Batch Normalization Layers##### 
-
-        # Initial Layer  
         self.conv_l, self.bn_l = [], []
 
         # Hidden layers 
@@ -37,10 +37,13 @@ class CNN(nn.Module):
         self.pool = F.max_pool2d
 
         ##### Fully Connected Part #####
+        # dim_in is different if we are using grayScale or not 
+        self.pool_dim  = 121 if grayscale else 363
+
         # We just use one single Sequential
         self.fc_layers = nn.Sequential(
                 nn.Flatten(), 
-                nn.Linear(363,fc_hidden),
+                nn.Linear(self.pool_dim,fc_hidden),
                 nn.ReLU(), 
                 nn.Linear(fc_hidden,fc_hidden), 
                 nn.ReLU(),   
@@ -59,7 +62,11 @@ class CNN(nn.Module):
         x = self.pool(x,kernel_size=self.pool_kernel)
 
         ###### Fully connected Output ######  
-        return nn.functional.softmax(self.fc_layers(x))
+        ndim = x.dim() # Number of Dimensions of x 
+        if ndim == 0 or ndim == 1 or ndim == 3: dim= 0
+        else: dim= 1
+        return nn.functional.softmax(self.fc_layers(x), dim=dim)
+        
 
     def loss(self,x: torch.Tensor,y: torch.Tensor)-> torch.Tensor:
         return F.cross_entropy(x,y) 
@@ -69,7 +76,7 @@ class CNN(nn.Module):
         if not os.path.isdir(params['params_dir']): os.mkdir(params['params_dir'])
         # Save Model 
         print('Saving Model....')
-        torch.save(self,os.path.join(params['params_dir'],'model_params.pt'))
+        torch.save(self.state_dict(),os.path.join(params['params_dir'],'model_params.pt'))
         print('Model Saved!')
 
     def save_checkpoint(self,epoch:int,optimizer,params: dict):   
