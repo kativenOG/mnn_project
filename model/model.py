@@ -31,6 +31,8 @@ class CNN(nn.Module):
             self.conv_l.append(nn.Conv2d(in_channels=n_in,out_channels=n_in,kernel_size=3)) 
             self.bn_l.append(nn.BatchNorm2d(n_in)) 
 
+        self.dropout_1 = nn.Dropout(0.2)
+
         # Transform to ModuleList
         self.conv_l = nn.ModuleList(self.conv_l)
         self.bn_l= nn.ModuleList(self.bn_l)
@@ -50,7 +52,7 @@ class CNN(nn.Module):
                 nn.Linear(fc_hidden,fc_hidden), 
                 nn.ReLU(),   
                 # Dropout 
-                nn.Dropout(0.25),
+                nn.Dropout(0.2),
                 nn.Linear(fc_hidden,n_classes), 
                 nn.ReLU(),   
         ) 
@@ -64,6 +66,7 @@ class CNN(nn.Module):
             
         ###### Pooling ######  
         x = self.pool(x,kernel_size=self.pool_kernel)
+        # x = self.dropout_1(x)
 
         ###### Fully connected Output ######  
         ndim = x.dim() # Number of Dimensions of x 

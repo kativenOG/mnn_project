@@ -10,6 +10,7 @@ def to_categorical(y, num_classes):
     appo = np.eye(num_classes, dtype='uint8')[y]
     return np.array([item[0] for item in appo])
 
+
 def get_img(data_path, img_size):
     # Getting image array from path:
     img = Image.open(data_path)
@@ -42,7 +43,7 @@ def get_dataloaders(shuffle:bool =True, batch_size:int = 32,
                 X.append(img)
                 Y.append(i)
 
-        # Create dateset:
+        # Create Dateset:
 
         transform = transforms.Compose([ transforms.PILToTensor() ]) 
         X = [transform(x) for x in X]

@@ -46,8 +46,9 @@ def plot_loss(losses: list,params: dict)->None:
  
 
 def single_train(dl:DataLoader, model:torch.nn.Module, optimizer)->float:
+    model.train()
+
     avg_loss= 0 
-    
     for X,y in dl:
         optimizer.zero_grad()
     
