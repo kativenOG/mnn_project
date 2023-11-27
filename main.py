@@ -49,7 +49,7 @@ if __name__=='__main__':
     
     # MODEL 
     n_channels = 3 if (not params['grayscale']) else 1 
-    model = CNN(n_in=n_channels, k=3, fc_hidden=15, n_classes=10, bn=True,grayscale=params['grayscale']).to(device)
+    model = CNN(n_in=n_channels, k=5, fc_hidden=25, n_classes=10, bn=True,grayscale=params['grayscale']).to(device)
     model.apply(apply_initialization) # Inizialize Model params 
 
     # OPTIMIZER 

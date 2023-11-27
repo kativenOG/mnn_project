@@ -1,15 +1,28 @@
+from math import degrees
+from sklearn.model_selection import train_test_split
 import os,torch 
 import numpy as np
 from PIL import Image
 
-import torchvision.transforms.v2 as transforms 
-from torch.utils.data import random_split 
-from torch.utils.data import TensorDataset, DataLoader
+import torchvision.transforms as transforms 
+from torch.utils.data import Dataset, DataLoader
+
+class Dataset_sign_language(Dataset):
+
+    def __init__(self, data: np.ndarray, y: np.ndarray, transform=None): 
+        self.data = data
+        self.label = torch.from_numpy(y).to(torch.int8)
+        self.transform = transform 
+
+    def __getitem__(self, index): 
+        return self.transform(self.data[index]), self.label[index]
+    
+    def __len__(self): 
+        return len(list(self.data)) 
 
 def to_categorical(y, num_classes):
     appo = np.eye(num_classes, dtype='uint8')[y]
     return np.array([item[0] for item in appo])
-
 
 def get_img(data_path, img_size):
     # Getting image array from path:
@@ -25,13 +38,9 @@ def get_dataloaders(shuffle:bool =True, batch_size:int = 32,
                 device:torch.device= torch.device('cpu'),
                 grayscale = False )-> tuple[DataLoader,DataLoader]:
 
-    print("Fetching the Data...")
-
     try: # Load npy files and transform them to torch Tensors  
         X = np.load(os.path.join(dataset_path,'X.npy'))
         Y = np.load(os.path.join(dataset_path,'Y.npy'))
-        X,Y = torch.from_numpy(X).to(torch.float32).to(device), \
-              torch.from_numpy(Y).to(torch.long).to(device)
     except: # Generate npy files if they are not there 
         # Get Data:
         labels = os.listdir(os.path.join(dataset_path,'Dataset')) # Geting labels
@@ -43,37 +52,40 @@ def get_dataloaders(shuffle:bool =True, batch_size:int = 32,
                 X.append(img)
                 Y.append(i)
 
-        # Create Dateset:
-
-        transform = transforms.Compose([ transforms.PILToTensor() ]) 
-        X = [transform(x) for x in X]
-        X = torch.stack(X).to(torch.float32).to(device)
+        # transform = transforms.Compose([ transforms.PILToTensor() ]) 
+        X = [np.array(x) for x in X]
+        X = np.stack(X).astype(np.float32)
 
         # Transform Labels
         Y = np.array(Y).astype(np.int8)
         num_class = len(set(Y.tolist()))
         Y = to_categorical(Y, num_class)
-        Y = torch.from_numpy(Y).to(torch.long).to(device)
 
+        # Save the np.ndarray values 
         if not os.path.exists(dataset_path): os.makedirs(dataset_path)
-        np.save(os.path.join(dataset_path,'X.npy'), X.detach().cpu().numpy())
-        np.save(os.path.join(dataset_path,'Y.npy'), Y.detach().cpu().numpy())
+        np.save(os.path.join(dataset_path,'X.npy'), X)
+        np.save(os.path.join(dataset_path,'Y.npy'), Y)
 
 
-    # GrayScale Augmentation 
-    if grayscale:
-        transform = transforms.Compose([ transforms.Grayscale() ]) 
-        X = transform(X)
+    x_train, x_test, y_train, y_test = train_test_split(X,Y,test_size=test_size) 
+
+    # Data Augmentation 
+    train_transform = [ 
+            transforms.ToTensor(),
+            transforms.RandomCrop(64, padding=2), 
+        ]
+    if grayscale: train_transform.insert(1,transforms.Grayscale())
+    train_transform = transforms.Compose(train_transform) 
+    train_dataset = Dataset_sign_language(x_train, y_train, train_transform)
+
+
+    test_transform = [ transforms.ToTensor() ] 
+    if grayscale: test_transform.insert(1,transforms.Grayscale())
+    test_transform = transforms.Compose(test_transform)
+    test_dataset = Dataset_sign_language(x_test, y_test, test_transform)
 
     # Dataset and Dataloder Generation 
-    print("Generating DataLoaders...")
-    full_dataset= TensorDataset(X,Y)
-    train_size = int(0.8 * len(full_dataset))
-    test_size = len(full_dataset) - train_size
-    train_dataset, test_dataset = random_split(full_dataset, [train_size, test_size])
- 
     train_dl, test_dl = DataLoader(train_dataset,shuffle=shuffle,batch_size=batch_size), \
                         DataLoader(test_dataset,shuffle=shuffle,batch_size=batch_size)  
      
-    print("Finished!\n")
     return train_dl, test_dl

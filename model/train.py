@@ -11,7 +11,7 @@ def train_cycle(train_dl: DataLoader, test_dl: DataLoader, model: torch.nn.Modul
         loss = single_train(train_dl, model, optimizer)
         loss_deque.append(loss) 
         loss_qeque.append(loss) 
-        
+
         # Print Average every 10 epochs 
         if (epoch+1)%10 == 0:
             print(f'Epoch {epoch+1}\n\t-The loss is {loss}\n\t-The average loss int the deque is {sum(loss_deque)/len(loss_deque)}')
@@ -50,10 +50,12 @@ def single_train(dl:DataLoader, model:torch.nn.Module, optimizer)->float:
 
     avg_loss= 0 
     for X,y in dl:
+        y = y.type(torch.LongTensor) # LongTensor = Integer 
         optimizer.zero_grad()
     
         prediction = model(X)
         loss = model.loss(prediction, y)
+        loss = loss.mean()
         loss.backward()
         optimizer.step()
     

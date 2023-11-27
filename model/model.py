@@ -2,8 +2,6 @@ import torch,os,time
 import torch.nn as nn  
 import torch.nn.functional as F
 
-from icecream import ic 
-
 
 class CNN(nn.Module):
 
@@ -21,29 +19,25 @@ class CNN(nn.Module):
         # If we use Batch Normalization or not 
         self.batch_n = bn
         # Size of the Pool Kernel 
-        self.pool_kernel = 5  
+        self.pool_kernel = 3  
 
         #####Convolutional Layers and Batch Normalization Layers##### 
-        self.conv_l, self.bn_l = [], []
+        conv_layers = []
+        for _ in range(k//2):
+            conv_layers.append(nn.Conv2d(in_channels=n_in,out_channels=n_in,kernel_size=3)) 
+            conv_layers.append(nn.BatchNorm2d(n_in)) 
+        conv_layers.append(nn.MaxPool2d(self.pool_kernel))
+        for _ in range(k//2):
+            conv_layers.append(nn.Conv2d(in_channels=n_in,out_channels=n_in,kernel_size=3)) 
+            conv_layers.append(nn.BatchNorm2d(n_in)) 
+        conv_layers.append(nn.MaxPool2d(self.pool_kernel))
 
-        # Hidden layers 
-        for _ in range(k):
-            self.conv_l.append(nn.Conv2d(in_channels=n_in,out_channels=n_in,kernel_size=3)) 
-            self.bn_l.append(nn.BatchNorm2d(n_in)) 
-
-        self.dropout_1 = nn.Dropout(0.2)
-
-        # Transform to ModuleList
-        self.conv_l = nn.ModuleList(self.conv_l)
-        self.bn_l= nn.ModuleList(self.bn_l)
+        # Transform conv_layers to Sequential
+        self.conv_layers = nn.Sequential(*conv_layers)
         
-        # Pooling Function 
-        self.pool = F.max_pool2d
-
         ##### Fully Connected Part #####
         # dim_in is different if we are using grayScale or not 
-        self.pool_dim  = 121 if grayscale else 363
-
+        self.pool_dim  = 25 if grayscale else 75 
         # We just use one single Sequential
         self.fc_layers = nn.Sequential(
                 nn.Flatten(), 
@@ -59,15 +53,7 @@ class CNN(nn.Module):
 
     def forward(self,x):
         ######  Convolutional Part ######  
-        for conv,bn in zip(self.conv_l,self.bn_l):
-            x = conv(x)  
-            if self.batch_n: x = bn(x)
-            x = F.relu(x)
-            
-        ###### Pooling ######  
-        x = self.pool(x,kernel_size=self.pool_kernel)
-        # x = self.dropout_1(x)
-
+        x = self.conv_layers(x)
         ###### Fully connected Output ######  
         ndim = x.dim() # Number of Dimensions of x 
         if ndim == 0 or ndim == 1 or ndim == 3: dim= 0
@@ -76,7 +62,7 @@ class CNN(nn.Module):
         
 
     def loss(self,x: torch.Tensor,y: torch.Tensor)-> torch.Tensor:
-        return F.cross_entropy(x,y) 
+        return F.cross_entropy(x,y,reduction='none') 
     
     def save_model(self,params: dict):
         # Check if dir exists, if not make it  
