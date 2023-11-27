@@ -62,7 +62,7 @@ class CNN(nn.Module):
         
 
     def loss(self,x: torch.Tensor,y: torch.Tensor)-> torch.Tensor:
-        return F.cross_entropy(x,y,reduction='none') 
+        return F.cross_entropy(x, y, reduction='mean') # Do mean for mini batch losses 
     
     def save_model(self,params: dict):
         # Check if dir exists, if not make it  

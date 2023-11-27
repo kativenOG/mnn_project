@@ -55,7 +55,6 @@ def single_train(dl:DataLoader, model:torch.nn.Module, optimizer)->float:
     
         prediction = model(X)
         loss = model.loss(prediction, y)
-        loss = loss.mean()
         loss.backward()
         optimizer.step()
     
