@@ -5,12 +5,12 @@ import matplotlib.pyplot as plt
 
 # TRAIN 
 def train_cycle(train_dl: DataLoader, test_dl: DataLoader, model: torch.nn.Module, optimizer, params: dict)->None:
-    loss_qeque = []
-    loss_deque = deque(maxlen=10) 
+    loss_queue = []
+    loss_deque = deque(maxlen=50) 
     for epoch in range(params['epochs']):
         loss = single_train(train_dl, model, optimizer)
         loss_deque.append(loss) 
-        loss_qeque.append(loss) 
+        loss_queue.append(loss) 
 
         # Print Average every 10 epochs 
         if (epoch+1)%10 == 0:

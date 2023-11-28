@@ -46,7 +46,7 @@ class CNN(nn.Module):
                 nn.Linear(fc_hidden,fc_hidden), 
                 nn.ReLU(),   
                 # Dropout 
-                nn.Dropout(0.2),
+                nn.Dropout(0.4),
                 nn.Linear(fc_hidden,n_classes), 
                 nn.ReLU(),   
         ) 

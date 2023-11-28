@@ -21,7 +21,7 @@ if __name__=='__main__':
                 # Optimizer Hyperparams
                 'lr': 0.0001,
                 'lr_decay_factor': 0.5,
-                "lr_decay_step_size": 300,
+                "lr_decay_step_size": 100,
 
                 # Standard hyperparams  
                 'img_size': 64,
@@ -53,9 +53,14 @@ if __name__=='__main__':
     model.apply(apply_initialization) # Inizialize Model params 
 
     # OPTIMIZER 
-    optimizer = torch.optim.SGD(params=model.parameters(),
-                                lr=params['lr'])
-
+    # optimizer = torch.optim.SGD(params=model.parameters(),
+    #                             lr=params['lr'])
+    
+    optimizer = torch.optim.Adam(
+                                params=model.parameters(),
+                                lr=params['lr'],
+                                weight_decay = 5e-6)
+     
     # START PRINT 
     print(f'Training Starts:\n\tlr: {params["lr"]}\n\tGrayscale: {params["grayscale"]}\n\tParams directory: {params["params_dir"]}\n')
     # TRAIN AND TEST MODEL 

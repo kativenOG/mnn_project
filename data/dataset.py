@@ -72,14 +72,25 @@ def get_dataloaders(shuffle:bool =True, batch_size:int = 32,
     train_transform = [ 
             transforms.ToTensor(),
             transforms.RandomCrop(64, padding=2), 
+            transforms.GaussianBlur(kernel_size=3)
         ]
-    if grayscale: train_transform.insert(1,transforms.Grayscale())
+    if grayscale: 
+        train_transform.insert(1,transforms.Grayscale())
+        train_transform.insert(2,transforms.Normalize(mean=(0.5),std=(0.5)))
+    else: 
+        train_transform.insert(2,transforms.Normalize(mean=(0.5, 0.5, 0.5),std=(0.5,0.5,0.5)))
+
     train_transform = transforms.Compose(train_transform) 
     train_dataset = Dataset_sign_language(x_train, y_train, train_transform)
 
 
-    test_transform = [ transforms.ToTensor() ] 
-    if grayscale: test_transform.insert(1,transforms.Grayscale())
+    test_transform = [] 
+    test_transform.append(transforms.ToTensor())
+    if grayscale: 
+        test_transform.insert(1,transforms.Grayscale())
+        test_transform.insert(2,transforms.Normalize(mean=(0.5),std=(0.5)))
+    else: 
+        test_transform.insert(2,transforms.Normalize(mean=(0.5, 0.5, 0.5),std=(0.5,0.5,0.5)))
     test_transform = transforms.Compose(test_transform)
     test_dataset = Dataset_sign_language(x_test, y_test, test_transform)
 
