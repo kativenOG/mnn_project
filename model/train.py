@@ -28,7 +28,7 @@ def train_cycle(train_dl: DataLoader, test_dl: DataLoader, model: torch.nn.Modul
 
 
     # Plot the loss over training time  
-    plot_loss(loss_qeque,params)
+    plot_loss(loss_queue ,params)
 
     # Save the model 
     model.save_model(params)

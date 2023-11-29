@@ -21,16 +21,16 @@ if __name__=='__main__':
                 # Optimizer Hyperparams
                 'lr': 0.0001,
                 'lr_decay_factor': 0.5,
-                "lr_decay_step_size": 100,
+                "lr_decay_step_size": 500,
 
                 # Standard hyperparams  
                 'img_size': 64,
-                'epochs':1000,
+                'epochs':2000,
 
                 # Other stuff 
                 'params_dir':'params',
                 'grayscale': False,
-                'jupyter': False,
+                'jupyter': True,
             }
     
     print('\n########################################')
@@ -49,17 +49,16 @@ if __name__=='__main__':
     
     # MODEL 
     n_channels = 3 if (not params['grayscale']) else 1 
-    model = CNN(n_in=n_channels, k=5, fc_hidden=25, n_classes=10, bn=True,grayscale=params['grayscale']).to(device)
+    model = CNN(n_in=n_channels, k=5, fc_hidden=15, n_classes=10, bn=True,grayscale=params['grayscale']).to(device)
     model.apply(apply_initialization) # Inizialize Model params 
 
     # OPTIMIZER 
-    # optimizer = torch.optim.SGD(params=model.parameters(),
-    #                             lr=params['lr'])
-    
+
+    # optimizer = torch.optim.SGD(params=model.parameters(),lr=params['lr'])
     optimizer = torch.optim.Adam(
-                                params=model.parameters(),
-                                lr=params['lr'],
-                                weight_decay = 5e-6)
+                                 params=model.parameters(),
+                                 lr=params['lr'],
+                                 weight_decay = 5e-6) # L2 Regularization 
      
     # START PRINT 
     print(f'Training Starts:\n\tlr: {params["lr"]}\n\tGrayscale: {params["grayscale"]}\n\tParams directory: {params["params_dir"]}\n')
