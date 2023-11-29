@@ -47,9 +47,13 @@ Or run the code through the notebook using VSCode (or any other iPython environm
 mnn
 code project.ipynb
 ```
-
+To run the project with a specific set of params, just add the file (ex: params.json) to the directory and pas it as a inline argument to the CLI version:
+```
+mnn
+python3 main.py params.json
+```
 ## Todo:
-- [ ] Add initialization scheme;
+- [x] Add initialization scheme;
+- [x] Choose one or more Extras;
 - [ ] Add more metrics to the Test;
-- [ ] Choose one or more Extras;
 - [ ] Write the project Notebook explaining every step.
