@@ -26,10 +26,12 @@ class CNN(nn.Module):
         for _ in range(k//2):
             conv_layers.append(nn.Conv2d(in_channels=n_in,out_channels=n_in,kernel_size=3)) 
             conv_layers.append(nn.BatchNorm2d(n_in)) 
+            conv_layers.append(nn.ReLU())
         conv_layers.append(nn.MaxPool2d(self.pool_kernel))
         for _ in range(k//2):
             conv_layers.append(nn.Conv2d(in_channels=n_in,out_channels=n_in,kernel_size=3)) 
             conv_layers.append(nn.BatchNorm2d(n_in)) 
+            conv_layers.append(nn.ReLU())
         conv_layers.append(nn.MaxPool2d(self.pool_kernel))
 
         # Transform conv_layers to Sequential
@@ -46,7 +48,7 @@ class CNN(nn.Module):
                 nn.Linear(fc_hidden,fc_hidden), 
                 nn.ReLU(),   
                 # Dropout 
-                nn.Dropout(0.4),
+                nn.Dropout(0.3),
                 nn.Linear(fc_hidden,n_classes), 
                 nn.ReLU(),   
         ) 
@@ -61,8 +63,8 @@ class CNN(nn.Module):
         return nn.functional.softmax(self.fc_layers(x), dim=dim)
         
 
-    def loss(self,x: torch.Tensor,y: torch.Tensor)-> torch.Tensor:
-        return F.cross_entropy(x, y, reduction='mean') # Do mean for mini batch losses 
+    def loss(self,input: torch.Tensor,target: torch.Tensor)-> torch.Tensor:
+        return F.cross_entropy(input=input, target=target, reduction='mean') # Do mean for mini batch losses 
     
     def save_model(self,params: dict):
         # Check if dir exists, if not make it  

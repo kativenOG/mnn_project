@@ -3,6 +3,8 @@ import os,torch
 import numpy as np
 from PIL import Image
 
+from icecream import ic 
+
 import torchvision.transforms as transforms 
 from torch.utils.data import Dataset, DataLoader
 
@@ -40,6 +42,11 @@ def get_dataloaders(shuffle:bool =True, batch_size:int = 32,
     try: # Load npy files and transform them to torch Tensors  
         X = np.load(os.path.join(dataset_path,'X.npy'))
         Y = np.load(os.path.join(dataset_path,'Y.npy'))
+
+        # Test :
+        print(1)
+        ic(X.shape,Y.shape)
+        exit()
     except: # Generate npy files if they are not there 
         # Get Data:
         labels = os.listdir(os.path.join(dataset_path,'Dataset')) # Geting labels
@@ -58,7 +65,11 @@ def get_dataloaders(shuffle:bool =True, batch_size:int = 32,
         # Transform Labels
         Y = np.array(Y).astype(np.int8)
         num_class = len(set(Y.tolist()))
+         
+        ic(Y.shape)
         Y = to_categorical(Y, num_class)
+        ic(Y.shape)
+        exit()
 
         # Save the np.ndarray values 
         if not os.path.exists(dataset_path): os.makedirs(dataset_path)

@@ -3,6 +3,8 @@ from collections import deque
 from torch.utils.data import DataLoader
 import matplotlib.pyplot as plt  
 
+from icecream import ic 
+
 # TRAIN 
 def train_cycle(train_dl: DataLoader, test_dl: DataLoader, model: torch.nn.Module, optimizer, params: dict)->None:
     loss_queue = []
@@ -13,12 +15,12 @@ def train_cycle(train_dl: DataLoader, test_dl: DataLoader, model: torch.nn.Modul
         loss_queue.append(loss) 
 
         # Print Average every 10 epochs 
-        if (epoch+1)%10 == 0:
+        if (epoch+1 )%10 == 0: 
             print(f'Epoch {epoch+1}\n\t-The loss is {loss}\n\t-The average loss int the deque is {sum(loss_deque)/len(loss_deque)}')
+            test(test_dl,model)
 
         # Run Test and save Checkpoint 
         if (epoch+1)%100 == 0: 
-            test(test_dl,model,epoch)
             model.save_checkpoint(epoch,optimizer,params)
         
         # Artificial Learning rate Decay 
@@ -62,17 +64,20 @@ def single_train(dl:DataLoader, model:torch.nn.Module, optimizer)->float:
 
     return avg_loss/len(dl) 
 
-def test(test_dl:DataLoader, model:torch.nn.Module, epoch:int)->None:
+def test(test_dl:DataLoader, model:torch.nn.Module)->None:
     model.eval() 
-    acc, count = 0,0 
-
+    acc, count, test_loss  = 0, 0, []
+    
     with torch.no_grad():
         for X,y in test_dl:
+            y = y.long()
             y_pred = model(X)
+            loss = model.loss(y_pred,y)
+            test_loss.append(loss.item())
             acc += (torch.argmax(y_pred, 1) == y).float().sum()
             count += len(y)
     
     acc = acc/count
-    print()
-    print(f"Test:\n\tEpoch {epoch+1}, Model accuracy {(acc*100)}") 
-    print()
+    print(f"\t-Test Loss: {(sum(test_loss)/len(test_loss))}") 
+    print(f"\t-Model accuracy: {(acc*100)}") 
+

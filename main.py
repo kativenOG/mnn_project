@@ -17,21 +17,21 @@ def read_params_file(base_params,file_name)->dict:
 
 if __name__=='__main__':
 
-    params = {
-                # Optimizer Hyperparams
-                'lr': 0.0001,
-                'lr_decay_factor': 0.5,
-                "lr_decay_step_size": 500,
+    params={
+            # Optimizer Hyperparams
+            'lr': 0.0001,
+            'lr_decay_factor': 0.5,
+            "lr_decay_step_size": 500,
 
-                # Standard hyperparams  
-                'img_size': 64,
-                'epochs':2000,
+            # Standard hyperparams  
+            'img_size': 64,
+            'epochs':2000,
 
-                # Other stuff 
-                'params_dir':'params',
-                'grayscale': False,
-                'jupyter': True,
-            }
+            # Other stuff 
+            'params_dir':'params',
+            'grayscale': False,
+            'jupyter': True,
+           }
     
     print('\n########################################')
     print(  '#   SIGN LANGUAGE DIGIT RECOGNITION    #')
@@ -49,7 +49,7 @@ if __name__=='__main__':
     
     # MODEL 
     n_channels = 3 if (not params['grayscale']) else 1 
-    model = CNN(n_in=n_channels, k=5, fc_hidden=15, n_classes=10, bn=True,grayscale=params['grayscale']).to(device)
+    model = CNN(n_in=n_channels, k=4, fc_hidden=15, n_classes=10, bn=True,grayscale=params['grayscale']).to(device)
     model.apply(apply_initialization) # Inizialize Model params 
 
     # OPTIMIZER 
